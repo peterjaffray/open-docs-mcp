@@ -59,14 +59,33 @@ const docDir = argv.docsDir || process.env.DOCS_DIR || './docs';
 const configPath = path.join(docDir, 'docs-config.json');
 
 /**
+ * Create empty config file if it doesn't exist
+ */
+async function ensureConfigFile(): Promise<void> {
+  try {
+    if (!(await fs.pathExists(configPath))) {
+      await fs.ensureDir(docDir);
+      await fs.writeJson(configPath, {
+        enabledDocs: {},
+        crawledDocs: {}
+      }, { spaces: 2 });
+      console.log(`Created empty config file at ${configPath}`);
+    }
+  } catch (error) {
+    console.error('Failed to create config file:', error);
+  }
+}
+
+/**
  * Load doc config from file
  */
 async function loadDocConfig(): Promise<void> {
   try {
-    if (await fs.pathExists(configPath)) {
-      const config = await fs.readJson(configPath);
-      docConfig = config.enabledDocs || {};
-    }
+    // Ensure config file exists before trying to load it
+    await ensureConfigFile();
+    
+    const config = await fs.readJson(configPath);
+    docConfig = config.enabledDocs || {};
   } catch (error) {
     console.error('Failed to load doc config:', error);
     docConfig = {};
@@ -95,15 +114,19 @@ async function saveDocConfig(): Promise<void> {
 
 async function updateCrawledDoc(name: string): Promise<void> {
   try {
-    const existingConfig = await fs.readJson(configPath);
+    // Ensure config file exists
+    await ensureConfigFile();
+    
     const config: { enabledDocs: DocConfig, crawledDocs: { [name: string]: string } } = {
       enabledDocs: docConfig,
       crawledDocs: {}
     };
+    
     if (await fs.pathExists(configPath)) {
       const existingConfig = await fs.readJson(configPath);
       config.crawledDocs = existingConfig.crawledDocs || {};
     }
+    
     config.crawledDocs[name] = new Date().toISOString();
     await fs.ensureDir(docDir);
     await fs.writeJson(configPath, config, { spaces: 2 });
@@ -555,6 +578,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case "list_enabled_docs": {
+      // Ensure config file exists before reading it
+      await ensureConfigFile();
+      
       const verbose = Boolean(request.params.arguments?.verbose);
       const config = await fs.readJson(configPath);
       const enabledDocs = docs.filter(doc => docConfig[doc.name]);
@@ -575,6 +601,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case "list_all_docs": {
+      // Ensure config file exists before reading it
+      await ensureConfigFile();
+      
       const verbose = Boolean(request.params.arguments?.verbose);
       const config = await fs.readJson(configPath);
       
