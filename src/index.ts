@@ -179,17 +179,22 @@ async function crawlAndSaveDocs(force: boolean = false): Promise<void> {
     if (!force && await fs.pathExists(configPath)) {
       const config = await fs.readJson(configPath);
       if (config.crawledDocs && config.crawledDocs[doc.name]) {
-      console.error(`Skipping doc ${doc.name} - already crawled at ${config.crawledDocs[doc.name]}`);
-      continue;
+        console.error(`Skipping doc ${doc.name} - already crawled at ${config.crawledDocs[doc.name]}`);
+        continue;
+      }
     }
 
     try {
-      // Create doc directory
-      const docDir = path.join('./docs', doc.name);
-      await fs.ensureDir(docDir);
+      // Create doc directory - FIX: use the correct path from docDir parameter
+      const docDirPath = path.join(docDir, doc.name);
+      await fs.ensureDir(docDirPath);
 
       // Launch browser and open new page
-      const browser = await puppeteer.launch();
+      const browser = await puppeteer.launch({
+        // WSL-friendly options to avoid GPU issues
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+        headless: 'new'
+      });
       
       try {
         const page = await browser.newPage();
@@ -295,7 +300,8 @@ async function crawlAndSaveDocs(force: boolean = false): Promise<void> {
               if (!fileName.endsWith('.md')) {
                 fileName += '.md';
               }
-              const filePath = path.join(docDir, fileName);
+              // FIX: Use docDirPath instead of docDir
+              const filePath = path.join(docDirPath, fileName);
               await fs.writeFile(filePath, content);
               console.log(`Successfully saved ${filePath}`);
               await updateCrawledDoc(doc.name);
@@ -313,7 +319,6 @@ async function crawlAndSaveDocs(force: boolean = false): Promise<void> {
       console.error(`Failed to process doc ${doc.name}:`, error);
     }
   }
-}
 }
 
 // Load docs and config when server starts
