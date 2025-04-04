@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- Auto-create config file when not exists to prevent errors on first run
+- Fixed error when running `list_all_docs` or `list_enabled_docs` before any configuration
+
 ## [1.0.0] - 2025-03-25
 ### Added
 - Initial release of docs-mcp MCP Server
