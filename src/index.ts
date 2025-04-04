@@ -193,7 +193,7 @@ async function crawlAndSaveDocs(force: boolean = false): Promise<void> {
       const browser = await puppeteer.launch({
         // WSL-friendly options to avoid GPU issues
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
-        headless: 'new'
+        headless: true
       });
       
       try {
