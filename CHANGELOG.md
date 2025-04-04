@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Auto-create config file when not exists to prevent errors on first run
 - Fixed error when running `list_all_docs` or `list_enabled_docs` before any configuration
+- Fixed incorrect path handling in document crawling that ignored the `--docsDir` parameter
+- Added WSL compatibility options to Puppeteer for better performance in WSL environments
 
 ## [1.0.0] - 2025-03-25
 ### Added
