@@ -110,9 +110,6 @@ npm run watch  # Auto-rebuild on changes
 npm run inspector  # Debug with MCP Inspector
 ```
 
-## Documentation
-Full documentation is available in the [docs](/docs) directory.
-
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 

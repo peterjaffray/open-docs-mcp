@@ -63,6 +63,14 @@
 npx -y open-docs-mcp --docsDir ./docs
 ```
 
+### 通过Smithery安装
+
+要通过 [Smithery](https://smithery.ai/server/@askme765cs/open-docs-mcp) 自动为 Claude Desktop 安装文档管理服务器：
+
+```bash
+npx -y @smithery/cli install @askme765cs/open-docs-mcp --client claude
+```
+
 ### 配置
 
 在Claude Desktop中使用，添加服务器配置：
@@ -99,9 +107,6 @@ Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 npm run watch  # 自动重建
 npm run inspector  # 使用MCP检查器调试
 ```
-
-## 文档
-完整文档请查看[docs](/docs)目录。
 
 ## 贡献
 欢迎提交Pull Request。重大改动请先创建issue讨论。
