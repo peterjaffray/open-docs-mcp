@@ -5,65 +5,86 @@
 [![Node Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-blue.svg)](package.json)
 
-An open-source MCP implementation providing document management functionality.
+A simplified, personal-use MCP server for local documentation management. Automatically discovers and indexes your project documentation with no configuration required.
+
 [中文文档][url-doczh]
 
 ## Features
 
-### Document Management
-- Crawl and index documentation from various sources
-- Support for multiple document formats
-- Full-text search capabilities
+### ✨ Zero-Configuration Setup
+- **Auto-discovery**: Automatically finds all `.md` files in `./docs` directory
+- **Project integration**: Includes `./README.md` and `./CHANGELOG.md` automatically  
+- **No setup required**: Works out of the box with any project structure
 
-### MCP Server API
-- Resource-based access to documents
-- Tool-based document management
+### 📚 Smart Documentation Management
+- **TABLE_OF_CONTENTS.md**: Auto-generates comprehensive table of contents
+- **Recursive scanning**: Supports nested subdirectories in `./docs`
+- **Modification tracking**: Shows last modified dates for all documents
 
-### Available Tools
-1. **enable_doc** - Enable crawling for a specific doc
-2. **disable_doc** - Disable crawling for a specific doc
-3. **crawl_docs** - Start crawling enabled docs
-4. **build_index** - Build search index for docs
-5. **search_docs** - Search documentation
-6. **list_enabled_docs** - List enabled docs
-7. **list_all_docs** - List all available docs
+### 🔍 Powerful Search
+- **Full-text search**: Lunr.js-powered search with relevance scoring
+- **Persistent index**: Fast startup with cached search index
+- **Rich results**: Includes file paths, scores, and contextual excerpts
 
-### Cursor @Docs Compatibility
+### 🛠 Simplified MCP Tools
+1. **search_docs** - Search through all documentation with pagination
+2. **list_docs** - List discovered files with optional verbose details
+3. **refresh_docs** - One-click refresh of docs, TOC, and search index
+4. **build_index** - Manual search index rebuild
 
-This project aims to replicate Cursor's @Docs functionality by providing:
+### 🎯 Personal Documentation Focus
 
-1. **Document Indexing**:
-   - Crawl and index documentation from various sources
-   - Support for multiple document formats (HTML, Markdown, etc.)
-   - Automatic re-indexing to keep docs up-to-date
+This simplified version provides focused local documentation management:
 
-2. **Document Access**:
-   - Search across all indexed documentation
-   - Integration with MCP protocol for AI context
+1. **Automatic Discovery**:
+   - Scans `./docs` directory for all `.md` files recursively
+   - Auto-includes project `README.md` and `CHANGELOG.md`
+   - Generates `TABLE_OF_CONTENTS.md` with proper linking
 
-3. **Custom Docs Management**:
-   - Add new documentation sources via `enable_doc` tool
-   - Manage enabled docs via `list_enabled_docs` tool
-   - Force re-crawl with `crawl_docs` tool
+2. **Smart Organization**:
+   - Groups project-level vs documentation files
+   - Shows modification dates for easy tracking
+   - Maintains file hierarchy in subdirectories
+
+3. **Reliable Search**:
+   - Persistent search index survives restarts
+   - No need to rebuild index every time
+   - Fast, relevant search results with context
 
 ### Architecture
 ```
-┌───────────────────────────────────────────────────────┐
-│                    open-docs-mcp Server                    │
-├───────────────────┬───────────────────┬───────────────┤
-│   Crawler Module  │  Search Engine    │  MCP Server   │
-├───────────────────┼───────────────────┼───────────────┤
-│ - Web crawling    │ - Full-text index │ - Resources   │
-│ - Doc conversion  │ - Relevance score │ - Tools       │
-│ - Storage         │ - Query parsing   │ - Prompts     │
-└───────────────────┴───────────────────┴───────────────┘
+┌─────────────────────────────────────────────────────┐
+│              Simplified open-docs-mcp               │
+├─────────────────┬─────────────────┬─────────────────┤
+│ Auto-Discovery  │  Search Engine  │   MCP Server    │
+├─────────────────┼─────────────────┼─────────────────┤
+│ - Scan ./docs   │ - Lunr.js index │ - 4 simple tools│
+│ - Include files │ - Persistent    │ - Doc resources │
+│ - Generate TOC  │ - Fast search   │ - No config     │
+└─────────────────┴─────────────────┴─────────────────┘
 ```
 
-## Usage
+## Quick Start
 
+### 1. Run the Server
 ```bash
-npx -y open-docs-mcp --docsDir ./docs
+npx -y open-docs-mcp
 ```
+*No configuration needed! Always uses `./docs` directory.*
+
+### 2. Add Documentation
+```bash
+mkdir docs
+echo "# My API\nThis is my API documentation." > docs/api.md
+echo "# Setup Guide\nHow to set up the project." > docs/setup.md
+```
+
+### 3. Use with Claude Desktop
+The server will automatically:
+- ✅ Discover all `.md` files in `./docs`
+- ✅ Include your `README.md` and `CHANGELOG.md`
+- ✅ Generate `./docs/TABLE_OF_CONTENTS.md`
+- ✅ Build searchable index in `./docs/search-index.json`
 
 ### Installing via Smithery
 
@@ -75,39 +96,48 @@ npx -y @smithery/cli install @askme765cs/open-docs-mcp --client claude
 
 ### Configuration
 
-To use with Claude Desktop, add the server config:
+### Claude Desktop Configuration
 
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+Add this to your Claude Desktop config:
+
+**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "open-docs-mcp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "open-docs-mcp",
-        "--docsDir",
-        "/path/to/docs"
-      ]
+      "args": ["-y", "open-docs-mcp"]
     }
   }
 }
 ```
 
-**Configuration Options:**
-- `command`: Node.js executable
-- `args`: Array of arguments to pass to the script
-  - `--docsDir`: Required, specifies docs directory path
-- `disabled`: Set to true to temporarily disable the server
-- `alwaysAllow`: Array of tool names that can be used without confirmation
+That's it! No `--docsDir` parameter needed - always uses `./docs`.
 
 ## Development
 
 ```bash
-npm run watch  # Auto-rebuild on changes
-npm run inspector  # Debug with MCP Inspector
+git clone https://github.com/askme765cs/open-docs-mcp.git
+cd open-docs-mcp
+npm install
+npm run build
+npm run watch     # Auto-rebuild on changes
+npm run inspector # Debug with MCP Inspector
+```
+
+### Project Structure
+```
+./docs/                   # Your documentation files
+├── TABLE_OF_CONTENTS.md  # Auto-generated
+├── search-index.json     # Persistent search index
+├── api.md               # Your docs
+└── guides/
+    └── setup.md         # Supports subdirectories
+
+./README.md              # Auto-included
+./CHANGELOG.md           # Auto-included  
 ```
 
 ## Contributing

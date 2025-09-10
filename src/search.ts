@@ -29,8 +29,8 @@ class SearchEngine {
     this.docStore = indexData.docStore;
   }
 
-  async buildIndex(docsDir: string) {
-    const docs = await this.collectDocs(docsDir);
+  async buildIndex(docsDir: string, docEntries?: { path: string, title: string }[]) {
+    const docs = docEntries ? await this.loadDocsFromEntries(docEntries) : await this.collectDocs(docsDir);
     this.index = lunr(function() {
       this.ref('path');
       this.field('title');
@@ -42,11 +42,33 @@ class SearchEngine {
     });
 
     // Store documents separately
+    this.docStore = {};
     docs.forEach(doc => {
       this.docStore[doc.path] = doc;
     });
 
     await this.saveIndex();
+  }
+
+  private async loadDocsFromEntries(docEntries: { path: string, title: string }[]): Promise<DocEntry[]> {
+    const docs: DocEntry[] = [];
+    
+    for (const entry of docEntries) {
+      try {
+        if (await fs.pathExists(entry.path)) {
+          const content = await fs.readFile(entry.path, 'utf-8');
+          docs.push({
+            path: entry.path,
+            title: entry.title,
+            content
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to read file ${entry.path}:`, error);
+      }
+    }
+    
+    return docs;
   }
 
   private async collectDocs(docsDir: string): Promise<DocEntry[]> {
